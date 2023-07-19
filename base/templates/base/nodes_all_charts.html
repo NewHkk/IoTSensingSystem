@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+    <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+    <style>
+        .column {
+      float: left;
+      width: 33%;
+      height: 400px;
+    }
+    </style>
+</head>
+
+<body>
+  <h2> {{ node.id }}--{{ node.name }} </h2>
+  <a href="{%  url 'home' %}">
+  <div class="column" id="gauge1" ></div>
+      </a>
+    <script>
+        var chart1 = echarts.init(document.getElementById('gauge1'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData1(chart1);
+                setInterval(fetchData1, 1000);
+            }
+        );
+        function fetchData1() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/gauge/1",
+                dataType: 'json',
+                success: function (result) {
+                    chart1.setOption(result.data);
+                }
+            });
+        }
+    </script>
+
+    <div id="gauge2" class="column" > </div>
+    <script>
+        var chart2 = echarts.init(document.getElementById('gauge2'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData2(chart2);
+                setInterval(fetchData2, 2000);
+            }
+        );
+        function fetchData2() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/gauge/2",
+                dataType: 'json',
+                success: function (result) {
+                    chart2.setOption(result.data);
+                }
+            });
+        }
+    </script>
+
+<div id="gauge3" class="column"> </div>
+    <script>
+        var chart3 = echarts.init(document.getElementById('gauge3'), 'white', {renderer: 'canvas'});
+        $(
+            function () {
+                fetchData3(chart3);
+                setInterval(fetchData3, 2000);
+            }
+        );
+        function fetchData3() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/gauge/3",
+                dataType: 'json',
+                success: function (result) {
+                    chart3.setOption(result.data);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

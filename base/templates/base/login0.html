@@ -1,0 +1,20 @@
+{% extends 'main.html' %}
+{% block content %}
+    <title>Login</title>
+     <form class="form" action="" method="POST">
+          {% csrf_token %}
+          <div class="form__group">
+            <label>username</label>
+            <input id="username" name="username" type="text" placeholder="输入用户名：" />
+          </div>
+          <div class="form__group">
+            <label>Password</label>
+            <input  id="password" name="password" type="password"  placeholder="输入密码："/>
+          </div>
+         <button class="btn btn--main" type="submit">
+             Login
+          </button>
+     </form>
+
+
+{% endblock content %}

@@ -1,0 +1,144 @@
+{% extends 'main.html' %}
+{% block content %}
+
+    <nav class="navbar">
+    <div class="container">
+        <div class="logo">节点信息监控主页</div>
+        <ul class="nav">
+            {% if request.user.is_authenticated %}
+                <li>
+                    <p>欢迎{{ request.user.username }}</p>
+                </li>
+                <li>
+                    <a href="{% url 'logout' %}" class="button">退出账号</a>
+                </li>
+            {% else %}
+                <li>
+                    <p>请登录</p>
+                </li>
+                <li>
+                 <a href="{% url 'login' %}" class="button">登录</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    </nav>
+
+
+    {% if request.user.is_authenticated %}
+        <header class="header">
+            <div class="container">
+                <h3>节点信息</h3>
+            </div>
+        </header>
+
+        <section class="boxes">
+        {% if nodes %}
+            <div class="container">
+                 {% for node in nodes %}
+                     <div class="box">
+                          <div><a target="_blank" href="{% url 'node_charts'  node.id %}">{{ node.id }}-{{ node.name }}</a></div>
+                          <i class="fa fa-circle" style="font-size:24px; color:gray; display: inline-block"></i>
+                             <div class="offline-td" id="offline{{ node.id }}" style="display: inline-block">不在线</div>
+                             <br>
+                          <i class="fa fa-square" style="font-size:24px; color:blue; display: inline-block"></i>
+                          <div class="abnormal-td" id="abnormal{{ node.id }}" style="display: inline-block">数据正常</div>
+
+                      </div>
+                {% endfor %}
+                <div class="box">
+                    <a href="{% url 'exportCSV' -1 %}" class="button" >导出所有节点数据<i class="fa fa-file-excel-o" style="font-size:24px"></i></a>
+                </div>
+            </div>
+            </section>
+        {% else %}
+          <p>No nodes available.</p>
+        {% endif %}
+    {% endif %}
+
+    <script>
+
+        console.log("in js");
+        let offline_lst = document.querySelectorAll('.offline-td');
+        let fa_circle_lst = document.querySelectorAll('.fa.fa-circle');
+
+        let abnormal_lst = document.querySelectorAll('.abnormal-td');
+        let fa_square_lst = document.querySelectorAll('.fa.fa-square');
+        $(
+            function () {
+                for (let i=1; i<offline_lst.length+1; i++ ){
+                    fetchData(i);
+                    setInterval(fetchData, 900+i*50,i);
+                };
+            }
+        );
+        function fetchData(i) {
+            let node_id = i;
+            let lst_idx = i-1;
+            let get_offline_url = "http://127.0.0.1:8000/offline/"+ node_id;
+
+            $.ajax({
+                type: "GET",
+                url: get_offline_url,
+                dataType: 'json',
+                success: function (result) {
+                    //console.log('请求offline 成功')
+                    if(result > 1.5) { //不在线
+                         if(offline_lst[lst_idx].innerText === '在线'){ //下线
+                             // 这里可以加个下线提示，发现 状态从 在线--> 不在线，发个POST请求后端发邮件提示
+                            let sendemail_url = "http://127.0.0.1:8000/sendemail/";
+                             $.ajax({
+                                 type: "POST",
+                                 url: sendemail_url,
+                                 data: {node_id:node_id,
+                                        message:"下线"},
+                                 dataType: 'json',
+                                 success: function (result){
+                                    console.log('在线--> 不在线')
+                                 }
+                             })
+                        }
+                        offline_lst[lst_idx].innerText = "不在线";
+                        fa_circle_lst[lst_idx].style.color = 'gray';
+
+                    }
+                    else{ //在线
+                        if(offline_lst[lst_idx].innerText === '不在线'){ //上线
+                            let sendemail_url = "http://127.0.0.1:8000/sendemail/";
+                                 $.ajax({
+                                     type: "POST",
+                                     url: sendemail_url,
+                                     data: {node_id:node_id,
+                                            message:"上线"},
+                                     dataType: 'json',
+                                     success: function (result){
+                                         console.log('不在线--> 在线')
+                                     }
+                                 })
+                            }
+                        offline_lst[lst_idx].innerText = "在线";
+                        fa_circle_lst[lst_idx].style.color = 'green';
+                    }
+                }
+            });
+            //获取节点是否异常：
+            let get_abnormal_url = "http://127.0.0.1:8000/abnormal/"+ i;
+            $.ajax({
+                type: "GET",
+                url: get_abnormal_url,
+                dataType: 'text',
+                success: function (result) {
+                    console.log(result);
+                    abnormal_lst[lst_idx].innerText = result;
+                    if( result != '数据正常') {
+                        fa_square_lst[lst_idx].style.color = "red";
+                    }else{
+                        fa_square_lst[lst_idx].style.color = "blue";
+                    }
+
+                    }
+            });
+        }
+    </script>
+
+{% endblock content %}

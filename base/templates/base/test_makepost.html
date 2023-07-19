@@ -1,0 +1,36 @@
+<!--发送post请求，只用于测试-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="info"></div>
+
+<button id="button1", value="1", onclick="">开车</button>
+<script src="{% static 'js/jquery.js' %}"></script>
+<script>
+    $(document).ready(function (){
+        $("#button1").click(function (){
+            let msg = document.getElementById('button1').value
+            $.ajax({
+                {#调用Ajax指令#}
+                url:"{% url "getpost" %}",
+                type:'POST', //使用post方式
+                headers:{'X-CSRFToken':'{{csrf_token}}'},  // 注意放到引号里面
+                data: {'node':'1',
+                'battery_level': Math.floor(30+30*Math.random()),
+                'temperature': Math.floor(33+10*Math.random()),
+                'humidity': Math.floor(50+50*Math.random()),
+                },         //传递参数
+                dataType:"JSON"
+            })
+        });
+    });
+</script>
+
+</body>
+</html>
